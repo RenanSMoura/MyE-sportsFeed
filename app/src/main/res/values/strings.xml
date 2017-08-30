@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MyE-sportsFeed</string>
+
+    <string name="network_fail_connection">Sem conexão com a Internet</string>
 </resources>

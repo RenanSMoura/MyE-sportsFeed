@@ -1,6 +1,8 @@
 package moura.renan.com.br.mye_sportsfeed.NetworkConnection;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -15,7 +17,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Renan on 28/08/2017.
- * Has the responsible to create all network requests
+ * Responsável por criar todos os requests
  */
 
 public class MainNetworkConnection {
@@ -104,5 +106,10 @@ public class MainNetworkConnection {
             return null;
         }
         return url;
+    }
+    public static boolean checkNetworkConnection(Context context){
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
     }
 }

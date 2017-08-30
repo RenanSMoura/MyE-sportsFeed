@@ -3,11 +3,6 @@ package moura.renan.com.br.mye_sportsfeed.Loaders;
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
-import android.util.Log;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,17 +44,28 @@ public class TournamentLoader extends AsyncTaskLoader<List<Tournament>> {
         /*
         Verifico se a url não é null e nem vazia
          */
-        if(mUrl == null || mUrl.isEmpty()){
+        if(mUrl == null){
             return null;
         }
         //Instancio meus objetos de conexão e a lista que será o retorno
         mMainNetworkConnection = new MainNetworkConnection();
         mTournamentArrayList = new ArrayList<>();
 
-        //Envio os dados
-        String jsonTournamentFeedResponse = mMainNetworkConnection.getJsonData(getContext(),mUrl,"GET");
+        /**
+         * Passo o contexto da activity, a url de conexão e o método requirido
+         */
+        String jsonTournamentFeedResponse = mMainNetworkConnection.getJsonData(getContext(),mUrl, mMethod);
 
+        //Verifico se o retorno não está vazio
+        if(jsonTournamentFeedResponse == null || jsonTournamentFeedResponse.isEmpty()){
+            //Utils.ShowToast.ShowToastMessage(getContext(),"Não há dados disponíveis.");
+            return  null;
+        }
+        /**
+         * Extraio as informações que retornaram da requisião https
+         */
         mTournamentArrayList = mTornamentFetch.fetchTornamentData(jsonTournamentFeedResponse);
+        //retorno meu array de torneios
         return mTournamentArrayList;
     }
 

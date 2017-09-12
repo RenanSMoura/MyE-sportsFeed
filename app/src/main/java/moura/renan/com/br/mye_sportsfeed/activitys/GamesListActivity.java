@@ -34,68 +34,45 @@ public class GamesListActivity extends AppCompatActivity implements LoaderManage
     private TextView mGameEmptyListView;
     private ProgressBar mProgressBar;
 
+    List<String> gamesList = new ArrayList<>();
+    String[] gamesString = {"dota2","counterstrike_go"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_games_list);
 
-        //instancio minhas variáveis da UI
-        mGameListView       = (ListView) findViewById(R.id.game_list);
-        mGameEmptyListView  = (TextView) findViewById(R.id.game_empty_view);
-        mProgressBar        = (ProgressBar) findViewById(R.id.game_loading_spinner);
+        loadUIComponents();
 
-        //Instancio meu array adapter
-        mGameArrayAdapter = new GameArrayAdapter(GamesListActivity.this,new ArrayList<Games>());
-        mGameListView.setAdapter(mGameArrayAdapter);
-        mGameListView.setEmptyView(mGameEmptyListView);
-
-        //Verifico a conexão
         if(MainNetworkConnection.checkNetworkConnection(GamesListActivity.this)){
-            //Instancio o loaderManager e o inicio
-            mGamesListLoaderManager = getSupportLoaderManager();
-            mGamesListLoaderManager.initLoader(GAMES_LOADER_ID,null,this);
-        }else {
-            //Caso n exista conexão, mostro essa mensagem na tela
-            mProgressBar.setVisibility(View.GONE);
-            mGameEmptyListView.setText(R.string.network_fail_connection);
+            getSupportLoaderManager().initLoader(GAMES_LOADER_ID,null,this);
+        }else{
+            handleErrosOnOperation(R.string.network_fail_connection);
         }
 
+        setUpClickListener();
 
-        /**
-         * Crio um ClickListener para iniciar a Activity de Torneios, passango o id do game
-         *
-         */
+    }
+    private void setUpClickListener(){
         mGameListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //Seleciono o id do game que foi clicado
-                Games game  = mGameArrayAdapter.getItem(i);
-                //Instancio uma nova intent
                 Intent intent = new Intent(GamesListActivity.this,TournamentListActivity.class);
-                //Adiciono parâmetros para essa intent
-                intent.putExtra("idGame",game.getId());
-                //Dou start na Activity
+                intent.putExtra("idGame",mGameArrayAdapter.getItem(i).getId());
                 startActivity(intent);
             }
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mGameArrayAdapter.clear();
+    /**
+     * TODO: achar um jeito de transformar isso em genêrico
+     */
+    private void handleErrosOnOperation(int id){
+        mProgressBar.setVisibility(View.GONE);
+        mGameEmptyListView.setText(id);
     }
-
-
     @Override
     public Loader<List<Games>> onCreateLoader(int id, Bundle args) {
-
-        List<String> gamesList = new ArrayList<>();
-        //Como só estou carregando dois games, estou criando um array
-        // que contém hardedcode os games que eu quero acompanhar
-        String[] gamesString = {"dota2","counterstrike_go"};
-
-        //Percorro meu array hardedcode para criar as urls
         for(int i = 0; i < gamesString.length; i++){
             Uri baseUri = Uri.parse(Utils.MAIN_URL);
             Uri.Builder uriBuilder = baseUri.buildUpon();
@@ -110,15 +87,12 @@ public class GamesListActivity extends AppCompatActivity implements LoaderManage
 
     @Override
     public void onLoadFinished(Loader<List<Games>> loader, List<Games> data) {
-        //Retiro minha barra de progresso
         mProgressBar.setVisibility(View.GONE);
-        //check o retorno
         if(data != null && !data.isEmpty()){
             mGameArrayAdapter.addAll(data);
         }else{
-            //caso n venha nada
             mGameArrayAdapter.clear();
-            mGameEmptyListView.setText("Nenhum game encontrado");
+            handleErrosOnOperation(R.string.games_no_data_found);
         }
     }
 
@@ -126,4 +100,17 @@ public class GamesListActivity extends AppCompatActivity implements LoaderManage
     public void onLoaderReset(Loader<List<Games>> loader) {
         mGameArrayAdapter.clear();
     }
+
+    private void loadUIComponents(){
+        mGameListView       = (ListView) findViewById(R.id.game_list);
+        mGameEmptyListView  = (TextView) findViewById(R.id.game_empty_view);
+        mProgressBar        = (ProgressBar) findViewById(R.id.game_loading_spinner);
+
+        //Instancio meu array adapter
+        mGameArrayAdapter = new GameArrayAdapter(GamesListActivity.this,new ArrayList<Games>());
+        mGameListView.setAdapter(mGameArrayAdapter);
+        mGameListView.setEmptyView(mGameEmptyListView);
+    }
 }
+
+

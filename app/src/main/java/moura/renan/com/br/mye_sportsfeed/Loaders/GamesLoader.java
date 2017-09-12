@@ -20,9 +20,9 @@ public class GamesLoader extends AsyncTaskLoader<List<Games>> {
 
     private List<String> mListUrl;
 
-    private MainNetworkConnection mMainNetworkConnection;
+    private MainNetworkConnection mMainNetworkConnection  =  new MainNetworkConnection();
 
-    private ArrayList<Games> mGamesArrayList;
+    private ArrayList<Games> mGamesArrayList = new ArrayList<>();
 
     private String mMethod;
 
@@ -35,16 +35,16 @@ public class GamesLoader extends AsyncTaskLoader<List<Games>> {
 
     @Override
     public List<Games> loadInBackground() {
-        mMainNetworkConnection = new MainNetworkConnection();
-        mGamesArrayList = new ArrayList<>();
         for (int i =0; i < mListUrl.size(); i++){
             if(mListUrl.get(i) != null) {
-                String jsonGamesFeedResponse = mMainNetworkConnection.getJsonData(
-                        getContext(), mListUrl.get(i), mMethod);
-                if (jsonGamesFeedResponse == null || jsonGamesFeedResponse.isEmpty()) {
+                String jsonGamesFeedResponse = mMainNetworkConnection.getJsonData(mListUrl.get(i), mMethod);
+
+                if (jsonGamesFeedResponse == null) {
                     return null;
                 }
+
                 List<Games> returnedGame = mGamesFetch.fetchGamesData(jsonGamesFeedResponse);
+
                 mGamesArrayList.add(returnedGame.get(0));
             }
         }

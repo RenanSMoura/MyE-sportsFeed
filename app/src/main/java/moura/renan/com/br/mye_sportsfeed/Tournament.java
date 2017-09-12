@@ -33,8 +33,8 @@ public class Tournament {
      * @param tournamentJson String contendo objetos json
      * @return Um Array de Tournaments
      */
-    public static ArrayList<Tournament> fetchTornamentData(String tournamentJson){
-        ArrayList<Tournament> list = new ArrayList<>();
+    public static ArrayList<Object> fetchTornamentData(String tournamentJson){
+        ArrayList<Object> list = new ArrayList<>();
 
         try{
             JSONArray jsonArray = new JSONArray(tournamentJson);

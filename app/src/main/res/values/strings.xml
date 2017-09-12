@@ -2,4 +2,6 @@
     <string name="app_name">MyE-sportsFeed</string>
 
     <string name="network_fail_connection">Sem conexão com a Internet</string>
+    <string name="games_no_data_found">Não há jogos disponíveis.</string>
+    <string name="tournaments_no_data_found">Não há torneios disponíveis</string>
 </resources>

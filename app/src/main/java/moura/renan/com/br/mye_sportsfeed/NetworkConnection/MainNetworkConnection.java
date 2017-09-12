@@ -21,70 +21,43 @@ import javax.net.ssl.HttpsURLConnection;
  */
 
 public class MainNetworkConnection {
-
     private static final String LOG_TAG = MainNetworkConnection.class.getName().toString();
+    private HttpsURLConnection httpsURLConnection = null;
+    private InputStream inputStream = null;
+    private String mMethod;
+    private String jsonResponse;
+    private static StringBuilder output;
 
 
-    public String getJsonData(Context context,String requestUrl,String method){
-        String jsonResponse = null;
+    public String getJsonData(String requestUrl, String method) {
         URL url = createUrl(requestUrl);
-        try {
-            jsonResponse = makeHttpConnection(url,method);
-        }catch (IOException e){
-            /**
-             * TODO: CRIAR TOAST
-             */
-        }
-        return jsonResponse;
+        return makeHttpConnection(url, method);
     }
-    private String makeHttpConnection(URL url, String method) throws IOException{
-        //variable response to handle json data
-        String jsonResponse = "";
-        //handle https connection
-        HttpsURLConnection httpsURLConnection = null;
-        //handle result from httpsUrlConnection
-        InputStream inputStream = null;
 
+    private String makeHttpConnection(URL url, String method)  {
+        mMethod = method;
+        jsonResponse = "";
+        if (checkIfUrlIsValid(url)) {
+            try {
+                createHttpsConnection(url);
+                if (httpsURLConnection.getResponseCode() == 200) {
+                    inputStream = httpsURLConnection.getInputStream();
+                    jsonResponse = readFromStream(inputStream);
+                }
 
-        /**
-         * TODO: Adicionar mensagem de toast
-         */
-        if(url == null  || url.toString().isEmpty()){
-            return null;
-        }
-
-        try {
-            httpsURLConnection = (HttpsURLConnection) url.openConnection();
-            httpsURLConnection.setReadTimeout(10000);
-            httpsURLConnection.setConnectTimeout(15000);
-            httpsURLConnection.setRequestMethod(method);
-            httpsURLConnection.connect();
-
-            if(httpsURLConnection.getResponseCode() == 200){
-                inputStream = httpsURLConnection.getInputStream();
-                jsonResponse = readFromSteam(inputStream);
-            }else{
-                /**
-                 * TODO: TOAST DE ERRO DE CONEXÂO
-                 */
-            }
-        }catch (IOException e){
-            /**
-             * TODO: ARRANJAR UM MEIO DE VOLTAR PARA A VIEW PRINCIPAL
-             */
-        }finally {
-            if(httpsURLConnection != null){
-                httpsURLConnection.disconnect();
-            }
-            if(inputStream != null){
-                inputStream.close();
+                closeHttpsConnection();
+                closeInputStream();
+            }catch (IOException e){
+                Log.e(LOG_TAG,e.getMessage().toString());
             }
         }
         return jsonResponse;
     }
 
-    private static String readFromSteam(InputStream inputStream) throws  IOException {
-        StringBuilder output = new StringBuilder();
+
+
+    private static String readFromStream(InputStream inputStream) throws  IOException {
+        output = new StringBuilder();
         if(inputStream != null){
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
@@ -98,18 +71,51 @@ public class MainNetworkConnection {
     }
 
     private static URL createUrl(String requestUrl) {
-        URL url = null;
-        try {
-            url = new URL(requestUrl);
+        try{
+            return new URL(requestUrl);
         }catch (MalformedURLException e){
-            Log.e(LOG_TAG,"Error on URL" + e);
+            Log.e(LOG_TAG,e.getMessage().toString());
             return null;
         }
-        return url;
+
     }
+
+    private boolean checkIfUrlIsValid(URL url){
+        if(url != null ){
+            return  true;
+        }
+        return  false;
+    }
+
+    private void createHttpsConnection(URL url){
+        try{
+            httpsURLConnection = (HttpsURLConnection) url.openConnection();
+            httpsURLConnection.setReadTimeout(10000);
+            httpsURLConnection.setConnectTimeout(15000);
+            httpsURLConnection.setRequestMethod(mMethod);
+            httpsURLConnection.connect();
+        }catch (IOException e){
+            Log.e(LOG_TAG,e.getMessage().toString());
+        }
+
+    }
+
+    private void closeHttpsConnection(){
+        if (httpsURLConnection != null) {
+            httpsURLConnection.disconnect();
+        }
+    }
+
+    private void closeInputStream() throws IOException{
+        if (inputStream != null) {
+            inputStream.close();
+        }
+    }
+
     public static boolean checkNetworkConnection(Context context){
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }
 }
+
